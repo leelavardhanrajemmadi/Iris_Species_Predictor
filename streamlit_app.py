@@ -1,41 +1,96 @@
 import streamlit as st
 import pandas as pd
-import joblib
+import seaborn as sns
+import matplotlib.pyplot as plt
 
-# load model
-model = joblib.load("models/iris_model.pkl")
+# page title
+st.title("Titanic Analytics Dashboard")
 
-# title
-st.title("Iris Species Prediction for 513")
+# load dataset
+df = pd.read_csv("data/titanic.csv")
 
-st.write("Enter flower measurements")
+# sidebar
+st.sidebar.header("Filters")
 
-# inputs
-sepal_length = st.number_input("Sepal Length")
-sepal_width = st.number_input("Sepal Width")
-petal_length = st.number_input("Petal Length")
-petal_width = st.number_input("Petal Width")
+gender = st.sidebar.selectbox(
+    "Select Gender",
+    ["All"] + list(df["Sex"].unique())
+)
 
-# prediction
-if st.button("Predict"):
+pclass = st.sidebar.selectbox(
+    "Select Passenger Class",
+    ["All"] + sorted(df["Pclass"].unique())
+)
 
-    sample_data = pd.DataFrame(
-        [[
-            sepal_length,
-            sepal_width,
-            petal_length,
-            petal_width
-        ]],
-        columns=[
-            "SepalLengthCm",
-            "SepalWidthCm",
-            "PetalLengthCm",
-            "PetalWidthCm"
-        ]
-    )
+# filtering
+filtered_df = df.copy()
 
-    prediction = model.predict(sample_data)
+if gender != "All":
+    filtered_df = filtered_df[
+        filtered_df["Sex"] == gender
+    ]
 
-    st.success(
-        f"Predicted Species: {prediction[0]}"
-    )
+if pclass != "All":
+    filtered_df = filtered_df[
+        filtered_df["Pclass"] == pclass
+    ]
+
+# dataset preview
+st.subheader("Dataset Preview")
+
+st.dataframe(filtered_df.head())
+
+# dataset shape
+st.subheader("Dataset Shape")
+
+st.write(filtered_df.shape)
+
+# survival count
+st.subheader("Survival Count")
+
+fig1, ax1 = plt.subplots()
+
+sns.countplot(
+    x=filtered_df["Survived"],
+    ax=ax1
+)
+
+st.pyplot(fig1)
+
+# gender survival comparison
+st.subheader("Gender vs Survival")
+
+fig2, ax2 = plt.subplots()
+
+sns.countplot(
+    x=filtered_df["Sex"],
+    hue=filtered_df["Survived"],
+    ax=ax2
+)
+
+st.pyplot(fig2)
+
+# age distribution
+st.subheader("Age Distribution")
+
+fig3, ax3 = plt.subplots()
+
+sns.histplot(
+    filtered_df["Age"].dropna(),
+    kde=True,
+    ax=ax3
+)
+
+st.pyplot(fig3)
+
+# passenger class distribution
+st.subheader("Passenger Class Distribution")
+
+fig4, ax4 = plt.subplots()
+
+sns.countplot(
+    x=filtered_df["Pclass"],
+    ax=ax4
+)
+
+st.pyplot(fig4)
