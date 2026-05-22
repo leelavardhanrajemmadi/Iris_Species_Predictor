@@ -63,11 +63,14 @@ st.subheader("Gender vs Survival")
 
 fig2, ax2 = plt.subplots()
 
-sns.countplot(
+a=sns.countplot(
     x=filtered_df["Sex"],
     hue=filtered_df["Survived"],
     ax=ax2
 )
+for i in a.containers:
+    a.bar_label(i)
+    
 
 st.pyplot(fig2)
 
